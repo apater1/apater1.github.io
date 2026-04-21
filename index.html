@@ -137,18 +137,18 @@
   <div class="rsvp-bg">
     <section id="rsvp" class="rsvp-section">
       <h2 class="section-title rsvp-title" data-i18n="rsvpTitle">🎟️ RSVP</h2>
-      <div class="rsvp-form" id="rsvpForm">
+      <form class="rsvp-form" id="rsvpForm" novalidate>
         <div class="form-group">
           <label for="name" data-i18n="labelName">Your Name</label>
-          <input type="text" id="name" data-i18n-placeholder="placeholderName" placeholder="e.g. Maria Papadopoulou" />
+          <input type="text" id="name" name="from_name" autocomplete="name" data-i18n-placeholder="placeholderName" placeholder="e.g. Maria Papadopoulou" />
         </div>
         <div class="form-group">
           <label for="email" data-i18n="labelEmail">Email Address</label>
-          <input type="email" id="email" data-i18n-placeholder="placeholderEmail" placeholder="you@example.com" />
+          <input type="email" id="email" name="reply_to" autocomplete="email" data-i18n-placeholder="placeholderEmail" placeholder="you@example.com" />
         </div>
         <div class="form-group">
           <label for="adults" data-i18n="labelAdults">Number of Adults</label>
-          <select id="adults">
+          <select id="adults" name="adults">
             <option value="" data-i18n="selectPrompt">Select...</option>
             <option>1</option><option>2</option><option>3</option>
             <option>4</option><option>5</option><option>6+</option>
@@ -156,14 +156,14 @@
         </div>
         <div class="form-group">
           <label for="toddlers" data-i18n="labelKids">Number of Toddlers / Kids</label>
-          <select id="toddlers">
+          <select id="toddlers" name="kids">
             <option value="" data-i18n="selectPrompt">Select...</option>
             <option>0</option><option>1</option><option>2</option>
             <option>3</option><option>4</option><option>5+</option>
           </select>
         </div>
-        <button class="submit-btn" onclick="submitRSVP()" data-i18n="submitBtn">Count me in! 🐣</button>
-      </div>
+        <button type="submit" class="submit-btn" id="rsvpSubmitBtn" data-i18n="submitBtn">Count me in! 🐣</button>
+      </form>
       <div class="success-msg" id="successMsg">
         <div class="emoji">🥳</div>
         <h3 data-i18n="successTitle">You're in!</h3>
@@ -176,6 +176,8 @@
     <span data-i18n-html="footerText">Made with <span>♥</span> by Tassos &amp; Emily · Easter 2026</span>
   </footer>
 
+  <!-- EmailJS: paste your Public Key + Template ID into EMAILJS_CONFIG below. In the EmailJS template, use {{from_name}}, {{reply_to}}, {{adults}}, {{kids}} (set Reply-To to {{reply_to}} in template settings if available). -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script>
     const translations = {
       en: {
@@ -220,7 +222,10 @@
         successTitle: "You're in!",
         successBody: "See you on April 13th for eggs, chocolate & good vibes.<br>Tassos & Emily can't wait to celebrate with you!",
         footerText: 'Made with <span>♥</span> by Tassos &amp; Emily · Easter 2026',
-        validationAlert: 'Please fill in all fields before submitting!'
+        validationAlert: 'Please fill in all fields before submitting!',
+        sendingBtn: 'Sending…',
+        sendError: 'Could not send your RSVP. Please try again in a moment.',
+        emailjsConfigAlert: 'Email is not set up yet: add your EmailJS public key and template ID in index.html (see EMAILJS_CONFIG).'
       },
       el: {
         pageTitle: 'Το Μεγάλο Κυνήγι Πασχαλινών Αυγών!',
@@ -264,8 +269,17 @@
         successTitle: 'Τα λέμε εκεί!',
         successBody: 'Τα λέμε στις 13 Απριλίου για αυγά, σοκολάτες και όμορφη παρέα.<br>Ο Τάσος και η Emily ανυπομονούν να γιορτάσουν μαζί σας!',
         footerText: 'Φτιαγμένο με <span>♥</span> από τον Τάσο &amp; την Emily · Πάσχα 2026',
-        validationAlert: 'Παρακαλώ συμπληρώστε όλα τα πεδία πριν την υποβολή!'
+        validationAlert: 'Παρακαλώ συμπληρώστε όλα τα πεδία πριν την υποβολή!',
+        sendingBtn: 'Αποστολή…',
+        sendError: 'Δεν ήταν δυνατή η αποστολή. Δοκιμάστε ξανά σε λίγο.',
+        emailjsConfigAlert: 'Το email δεν έχει ρυθμιστεί: προσθέστε το public key και το template ID του EmailJS στο index.html (EMAILJS_CONFIG).'
       }
+    };
+
+    const EMAILJS_CONFIG = {
+      publicKey: 'vGuBRZgWe9qgb27Pi',
+      serviceId: 'service_vd9bfvm',
+      templateId: 'template_0r2tm6r'
     };
 
     let currentLang = localStorage.getItem('siteLang') || 'en';
@@ -308,19 +322,60 @@
 
     setLanguage(currentLang);
 
-    function submitRSVP() {
+    if (typeof emailjs !== 'undefined' && EMAILJS_CONFIG.publicKey !== 'vGuBRZgWe9qgb27Pi') {
+      emailjs.init({ publicKey: EMAILJS_CONFIG.publicKey });
+    }
+
+    document.getElementById('rsvpForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      submitRSVP();
+    });
+
+    async function submitRSVP() {
       const name = document.getElementById('name').value.trim();
       const email = document.getElementById('email').value.trim();
       const adults = document.getElementById('adults').value;
       const toddlers = document.getElementById('toddlers').value;
+      const t = translations[currentLang];
+      const submitBtn = document.getElementById('rsvpSubmitBtn');
 
       if (!name || !email || !adults || !toddlers) {
-        alert(translations[currentLang].validationAlert);
+        alert(t.validationAlert);
         return;
       }
 
-      document.getElementById('rsvpForm').style.display = 'none';
-      document.getElementById('successMsg').style.display = 'block';
+      if (
+        EMAILJS_CONFIG.publicKey === 'vGuBRZgWe9qgb27Pi' ||
+        EMAILJS_CONFIG.templateId === 'template_0r2tm6r'
+      ) {
+        alert(t.emailjsConfigAlert);
+        return;
+      }
+
+      if (typeof emailjs === 'undefined') {
+        alert(t.sendError);
+        return;
+      }
+
+      submitBtn.disabled = true;
+      const prevLabel = submitBtn.textContent;
+      submitBtn.textContent = t.sendingBtn;
+
+      try {
+        await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, {
+          from_name: name,
+          reply_to: email,
+          adults: adults,
+          kids: toddlers
+        });
+        document.getElementById('rsvpForm').style.display = 'none';
+        document.getElementById('successMsg').style.display = 'block';
+      } catch (err) {
+        console.error('EmailJS error:', err);
+        alert(t.sendError);
+        submitBtn.disabled = false;
+        submitBtn.textContent = prevLabel;
+      }
     }
   </script>
 </body>
