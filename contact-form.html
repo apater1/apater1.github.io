@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EmailJS Contact Form</title>
+
+  <script
+    type="text/javascript"
+    src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"
+  ></script>
+  <script type="text/javascript">
+    (function () {
+      emailjs.init({
+        publicKey: "vGuBRZgWe9qgb27Pi",
+      });
+    })();
+
+    window.onload = function () {
+      const form = document.getElementById("contact-form");
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        emailjs.sendForm("contact_service", "contact_form", this).then(
+          function () {
+            alert("Message sent successfully!");
+            form.reset();
+          },
+          function (error) {
+            alert("Failed to send message. Check the console for details.");
+            console.error("EmailJS error:", error);
+          }
+        );
+      });
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 0 16px;
+    }
+
+    form {
+      display: grid;
+      gap: 12px;
+    }
+
+    label {
+      font-weight: 600;
+    }
+
+    input,
+    textarea,
+    button {
+      font: inherit;
+      padding: 10px;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    button {
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Contact Us</h1>
+
+  <form id="contact-form">
+    <input type="hidden" name="time" value="Apr 21 2026 12:00" />
+
+    <label for="name">Name</label>
+    <input id="name" type="text" name="name" required />
+
+    <label for="email">Email</label>
+    <input id="email" type="email" name="email" required />
+
+    <label for="title">Subject</label>
+    <input id="title" type="text" name="title" required />
+
+    <label for="message">Message</label>
+    <textarea id="message" name="message" required></textarea>
+
+    <button type="submit">Send</button>
+  </form>
+</body>
+</html>
