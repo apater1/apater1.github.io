@@ -21,8 +21,8 @@
 
       form.addEventListener("submit", function (event) {
         event.preventDefault();
-
-        emailjs.sendForm("default_service", "contact_form", this).then(
+        
+        emailjs.sendForm("service_vd9bfvm", "contact_form", this).then(
           function () {
             alert("Message sent successfully!");
             form.reset();
